@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PREHAT Suite — Full Neon Interaktif</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg-dark:#0b0f1e;
+  --bg-gradient:linear-gradient(135deg,#0f1a30,#0b0f1e);
+  --neon-primary:#00f0ff;
+  --neon-secondary:#ff3aff;
+  --text-light:#f5f5f5;
+  --card-bg:rgba(10,14,30,0.85);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Segoe UI,Roboto,sans-serif;}
+body{background:var(--bg-gradient);color:var(--text-light);display:flex;min-height:100vh;}
+.sidebar{width:260px;background:rgba(0,0,0,0.25);backdrop-filter:blur(10px);padding:20px;position:fixed;height:100%;border-right:1px solid rgba(255,255,255,0.1);}
+.sidebar .brand{text-align:center;margin-bottom:20px;animation:glow 2s infinite alternate;}
+.sidebar .brand h2{color:var(--neon-primary);text-shadow:0 0 8px var(--neon-primary),0 0 20px var(--neon-secondary);}
+.sidebar nav{display:flex;flex-direction:column;gap:10px;}
+.btn-nav{padding:12px;border:none;border-radius:10px;text-align:left;color:var(--text-light);background:transparent;cursor:pointer;font-weight:700;transition:all .2s;text-shadow:0 0 4px var(--neon-primary);}
+.btn-nav:hover{transform:translateX(6px);color:var(--neon-secondary);text-shadow:0 0 12px var(--neon-primary),0 0 20px var(--neon-secondary);}
+main{margin-left:280px;padding:20px;flex:1;transition:all .3s;}
+section{display:none;opacity:0;transform:translateY(20px);transition:all .4s;}
+section.active{display:block;opacity:1;transform:none;}
+.page-header{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.page-header h1{color:var(--neon-primary);text-shadow:0 0 6px var(--neon-primary);}
+.cards{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px;}
+.card{background:var(--card-bg);padding:20px;border-radius:14px;box-shadow:0 0 12px var(--neon-primary),0 0 24px var(--neon-secondary);transition:all .3s;}
+.card:hover{transform:translateY(-6px);box-shadow:0 0 18px var(--neon-primary),0 0 36px var(--neon-secondary);}
+.stat-number{font-size:28px;font-weight:800;color:var(--neon-primary);}
+.stat-label{color:#aaa;margin-top:4px;}
+.profile-box{display:flex;flex-direction:column;gap:16px;}
+.profile-top{display:flex;gap:20px;align-items:center;}
+.company-logo, .owner-photo{width:120px;height:120px;border-radius:16px;object-fit:cover;box-shadow:0 0 12px var(--neon-primary);}
+.profile-meta{display:flex;gap:16px;margin-top:10px;}
+.profile-meta .meta{background:rgba(0,0,0,0.2);padding:10px;border-radius:10px;text-align:center;flex:1;}
+input, textarea, select{padding:10px;border-radius:8px;border:none;background:rgba(0,0,0,0.2);color:var(--text-light);}
+textarea{resize:vertical;}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;transition:all .2s;box-shadow:0 0 6px var(--neon-primary);}
+.btn.primary{background:linear-gradient(90deg,var(--neon-primary),var(--neon-secondary));color:#000;text-shadow:none;box-shadow:0 0 12px var(--neon-primary),0 0 24px var(--neon-secondary);}
+.btn.primary:hover{transform:scale(1.05);box-shadow:0 0 18px var(--neon-primary),0 0 36px var(--neon-secondary);}
+.btn.ghost{background:transparent;border:1px solid var(--neon-primary);color:var(--neon-primary);}
+table{width:100%;border-collapse:collapse;margin-top:12px;}
+thead th{background:rgba(0,0,0,0.25);padding:10px;border-radius:6px;text-align:left;color:var(--neon-primary);}
+tbody td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.action-btn{padding:6px 10px;border-radius:8px;border:none;color:#fff;cursor:pointer;}
+.edit-btn{background:#3b82f6;box-shadow:0 0 6px #3b82f6;}
+.del-btn{background:#ef4444;box-shadow:0 0 6px #ef4444;}
+.task-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:10px;}
+.task-item{background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;transition:all .2s;}
+.task-item:hover{box-shadow:0 0 12px var(--neon-primary);}
+@keyframes glow{0%{text-shadow:0 0 4px var(--neon-primary);}100%{text-shadow:0 0 16px var(--neon-secondary);}}
+@media(max-width:980px){.sidebar{display:none}main{margin-left:0;padding:16px}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<div class="brand"><h2>PREHAT Suite</h2><div class="muted">Neon Full</div></div>
+<nav>
+<button class="btn-nav" data-target="dashboard">🏠 Dashboard</button>
+<button class="btn-nav" data-target="profile">👤 Profil</button>
+<button class="btn-nav" data-target="employees">👥 Karyawan</button>
+<button class="btn-nav" data-target="notes">📝 Catatan Harian</button>
+<button class="btn-nav" data-target="docs">📄 Dokumen</button>
+<button class="btn-nav" data-target="files">📤 Upload File</button>
+<button class="btn-nav" data-target="calendar">📅 Kalender Kerja</button>
+<button class="btn-nav" data-target="reports">📊 Laporan</button>
+</nav>
+</aside>
+
+<main>
+<!-- DASHBOARD -->
+<section id="dashboard" class="active">
+<div class="page-header"><h1>Dashboard</h1></div>
+<div class="cards">
+<div class="card"><div class="stat-number" id="statEmployees">0</div><div class="stat-label">Karyawan</div></div>
+<div class="card"><div class="stat-number" id="statDocs">0</div><div class="stat-label">Dokumen</div></div>
+<div class="card"><div class="stat-number" id="statNotes">0</div><div class="stat-label">Catatan</div></div>
+<div class="card"><div class="stat-number" id="statBalance">Rp 0</div><div class="stat-label">Saldo</div></div>
+</div>
+</section>
+
+<!-- PROFILE -->
+<section id="profile">
+<div class="page-header"><h1>Profil Perusahaan</h1></div>
+<div class="card profile-box">
+<div class="profile-top">
+<img src="logo.jpeg" class="company-logo" onerror="this.style.display='none'">
+<div class="profile-info">
+<h1>PT PREHAT NUSANTARA</h1>
+<p class="muted">Bidang: Teknologi & Layanan Digital</p>
+<div class="profile-meta">
+<div class="meta"><strong>Tahun</strong><div>2015</div></div>
+<div class="meta"><strong>Karyawan</strong><div id="metaEmployeesVal">0</div></div>
+</div>
+</div>
+<img src="profil.jpeg" class="owner-photo" onerror="this.style.display='none'">
+</div>
+</div>
+</section>
+
+<!-- EMPLOYEES -->
+<section id="employees">
+<div class="page-header"><h1>Data Karyawan</h1></div>
+<div class="card">
+<form id="employeeForm">
+<input id="empName" placeholder="Nama lengkap" required>
+<input id="empPos" placeholder="Jabatan" required>
+<button class="btn primary" type="submit">Tambah / Simpan</button>
+<button id="empCancel" class="btn ghost" type="button" style="display:none">Batal</button>
+</form>
+<table>
+<thead><tr><th>#</th><th>Nama</th><th>Jabatan</th><th>Aksi</th></tr></thead>
+<tbody id="employeeTable"></tbody>
+</table>
+</div>
+</section>
+
+<!-- NOTES -->
+<section id="notes">
+<div class="page-header"><h1>Catatan Harian</h1></div>
+<div class="card">
+<form id="noteForm">
+<textarea id="noteInput" placeholder="Tulis catatan..." required></textarea>
+<button class="btn primary" type="submit">Tambah Catatan</button>
+</form>
+<ul id="noteList" class="task-list"></ul>
+</div>
+</section>
+
+<!-- DOCS -->
+<section id="docs">
+<div class="page-header"><h1>Dokumen</h1></div>
+<div class="card">
+<form id="docForm">
+<input id="docTitle" placeholder="Judul Dokumen" required>
+<textarea id="docContent" placeholder="Isi dokumen..." required></textarea>
+<button class="btn primary" type="submit">Buat Dokumen</button>
+</form>
+<ul id="docList" class="task-list"></ul>
+</div>
+</section>
+
+<!-- FILES -->
+<section id="files">
+<div class="page-header"><h1>Upload File</h1></div>
+<div class="card">
+<input type="file" id="fileInput" multiple>
+<ul id="fileList" class="task-list"></ul>
+</div>
+</section>
+
+<!-- CALENDAR -->
+<section id="calendar">
+<div class="page-header"><h1>Kalender Kerja</h1></div>
+<div class="card" id="calendarContainer"></div>
+</section>
+
+<!-- REPORTS -->
+<section id="reports">
+<div class="page-header"><h1>Laporan</h1></div>
+<div class="card">
+<button id="downloadReport" class="btn primary">📥 Download Laporan PDF</button>
+</div>
+</section>
+</main>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const store=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+const escape=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+// Keys
+const K_EMP='prehat_employees_v2';
+const K_NOTES='prehat_notes_v2';
+const K_DOCS='prehat_docs_v2';
+const K_FILES='prehat_files_v2';
+
+// Defaults
+let employees=load(K_EMP,[]);
+let notes=load(K_NOTES,[]);
+let docs=load(K_DOCS,[]);
+let files=load(K_FILES,[]);
+
+// Navigation
+$$('.btn-nav').forEach(btn=>{
+btn.addEventListener('click',()=>{
+const t=btn.dataset.target;
+$$('main section').forEach(s=>s.classList.remove('active'));
+$('#'+t).classList.add('active');
+});
+});
+
+// Employees CRUD
+const empForm=$('#employeeForm'), empTable=$('#employeeTable');
+let editEmpIndex=null;
+function renderEmployees(){
+empTable.innerHTML='';
+employees.forEach((emp,i)=>{
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${i+1}</td><td>${escape(emp.name)}</td><td>${escape(emp.pos||emp.position)}</td>
+<td><button class="action-btn edit-btn" data-i="${i}">✏️</button>
+<button class="action-btn del-btn" data-i="${i}">🗑️</button></td>`;
+empTable.appendChild(tr);
+});
+$$('.edit-btn').forEach(b=>b.onclick=()=>openEditEmployee(parseInt(b.dataset.i)));
+$$('.del-btn').forEach(b=>b.onclick=()=>{if(confirm('Hapus?')){employees.splice(parseInt(b.dataset.i),1);store(K_EMP,employees);renderEmployees();}});
+$('#statEmployees').textContent=employees.length;
+$('#metaEmployeesVal').textContent=employees.length;
+store(K_EMP,employees);
+}
+empForm.addEventListener('submit',e=>{
+e.preventDefault();
+const name=$('#empName').value.trim();
+const pos=$('#empPos').value.trim();
+if(!name||!pos)return;
+if(editEmpIndex===null){employees.push({name,pos});}
+else{employees[editEmpIndex]={name,pos};editEmpIndex=null;$('#empCancel').style.display='none';}
+$('#empName').value='';$('#empPos').value='';
+renderEmployees();
+});
+$('#empCancel').onclick=()=>{editEmpIndex=null;$('#empCancel').style.display='none';$('#empName').value='';$('#empPos').value='';};
+function openEditEmployee(i){editEmpIndex=i;$('#empName').value=employees[i].name;$('#empPos').value=employees[i].pos||employees[i].position;$('#empCancel').style.display='inline-block';}
+
+// Notes
+const noteForm=$('#noteForm'), noteList=$('#noteList');
+function renderNotes(){noteList.innerHTML='';notes.forEach((n,i)=>{const li=document.createElement('li');li.className='task-item';li.innerHTML=`<span>${escape(n)}</span><span><button class="btn ghost" data-i="${i}">🗑️</button></span>`;noteList.appendChild(li);});
+$$('#noteList button').forEach(b=>b.onclick=()=>{notes.splice(parseInt(b.dataset.i),1);store(K_NOTES,notes);renderNotes();});
+$('#statNotes').textContent=notes.length;
+store(K_NOTES,notes);}
+noteForm.onsubmit=e=>{e.preventDefault();const val=$('#noteInput').value.trim();if(!val)return;notes.push(val);$('#noteInput').value='';renderNotes();};
+
+// Docs
+const docForm=$('#docForm'), docList=$('#docList');
+function renderDocs(){docList.innerHTML='';docs.forEach((d,i)=>{const li=document.createElement('li');li.className='task-item';li.innerHTML=`<strong>${escape(d.title)}</strong><p>${escape(d.content)}</p><button class="btn ghost" data-i="${i}">🗑️</button>`;docList.appendChild(li);});
+$$('#docList button').forEach(b=>{b.onclick=()=>{docs.splice(parseInt(b.dataset.i),1);store(K_DOCS,docs);renderDocs();}});
+$('#statDocs').textContent=docs.length;
+store(K_DOCS,docs);}
+docForm.onsubmit=e=>{e.preventDefault();const t=$('#docTitle').value.trim();const c=$('#docContent').value.trim();if(!t||!c)return;docs.push({title:t,content:c});$('#docTitle').value='';$('#docContent').value='';renderDocs();};
+
+// Files
+const fileInput=$('#fileInput'), fileList=$('#fileList');
+function renderFiles(){fileList.innerHTML='';files.forEach((f,i)=>{const li=document.createElement('li');li.className='task-item';li.innerHTML=`${escape(f.name)} (${f.size} bytes) <button class="btn ghost" data-i="${i}">🗑️</button>`;fileList.appendChild(li);});
+$$('#fileList button').forEach(b=>{b.onclick=()=>{files.splice(parseInt(b.dataset.i),1);store(K_FILES,files);renderFiles();}});}
+fileInput.onchange=e=>{for(const f of e.target.files){files.push({name:f.name,size:f.size})}store(K_FILES,files);renderFiles();};
+
+// Calendar
+const calContainer=$('#calendarContainer');
+function renderCalendar(){
+const d=new Date();
+const y=d.getFullYear(), m=d.getMonth();
+let html='<table style="width:100%;border-collapse:collapse;"><thead><tr>';
+const days=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+days.forEach(day=>html+='<th>'+day+'</th>');
+html+='</tr></thead><tbody><tr>';
+const firstDay=new Date(y,m,1).getDay();
+for(let i=0;i<firstDay;i++)html+='<td></td>';
+const daysInMonth=new Date(y,m+1,0).getDate();
+for(let i=1;i<=daysInMonth;i++){
+if((i+firstDay-1)%7===0&&i!==1)html+='</tr><tr>';
+html+='<td style="padding:8px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;">'+i+'</td>';
+}
+html+='</tr></tbody></table>';
+calContainer.innerHTML=html;
+}
+renderCalendar();
+
+// Init render
+function init(){renderEmployees();renderNotes();renderDocs();renderFiles();}
+init();
+})();
+</script>
+</body>
+</html>
